@@ -40,7 +40,7 @@ Lambda memory sizing: Recommend highest, 1536MB, since the pricing and associate
 
 S3 bucket: properties, an Event for S3 put/post/copy (depending on desired usage), and a filter like .zip, and select the newly setup Lambda function.  When udpating the Lambda function, may need to delete and setup the S3 bucket event again.
 
-Random 8MB ZIP file with CSV content file for different Lambda sizing comparisons with S3 put event
+Random 8MB ZIP file with CSV content file for different Lambda sizing comparisons with S3 put event as of 2016-01-29:
 ```
 --duration 28-38 seconds at 256MB lambda sizing
 --duration 13-18 seconds at 512MB lambda sizing
