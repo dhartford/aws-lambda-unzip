@@ -8,6 +8,8 @@ LICENSE: Apache License, see license file.
 
 BEHAVIOR (note, very different from original aws-lambda-unzip): Zipfilename will be used to create a directory beside zipfile location, then each file within the zip file will be moved underneath that directory and GZIP compressed (.gz extension).
 
+INTENDED USAGE: most cluster/cloud computing/splitting operations do not recognize nor understand ZIP files, particularly since the content of a zip file could be any number of other files.  However, gzip is well understood and with the proper setup is a splittable file format and provide much greater throughput (for any good-sized files) than left uncompressed.
+
 The zipfile is deleted at the end of the operation.
 
 ## Necessary permissions
