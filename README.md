@@ -31,7 +31,7 @@ Maven is already configured to package the .jar file correctly for deployment in
 ```
 mvn clean package
 ```
-The packaged file will be present in your `target/` folder.
+The packaged file will be present in your `target/` folder. Upload the non-original named JAR file (the larger one).
 
 ## Configuring AWS 
 Lambda Configuration of Handler: *kornell.S3EventProcessorUnzip*
