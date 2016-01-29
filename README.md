@@ -38,7 +38,7 @@ Lambda Configuration of Handler: *kornell.S3EventProcessorUnzip*
 
 Lambda memory sizing: Recommend highest, 1536MB, since the pricing and associated performance gains appear to be linear as of 2016-01-29.
 
-Make sure to setup on your S3 bucket, properties, an Event for S3 put/post/copy (depending on desired usage) and select the newly setup Lambda function.  When udpating the Lambda function, may need to delete and setup the S3 bucket event again.
+S3 bucket: properties, an Event for S3 put/post/copy (depending on desired usage), and a filter like .zip, and select the newly setup Lambda function.  When udpating the Lambda function, may need to delete and setup the S3 bucket event again.
 
 Random 8MB ZIP file with CSV content file for different Lambda sizing comparisons with S3 put event
 ```
