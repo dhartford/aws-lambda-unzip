@@ -1,5 +1,5 @@
 # aws-lambda-unzip
-Function for AWS Lambda to extract zip files uploaded to S3
+Function for AWS Lambda to extract zip files uploaded to S3. This version converts them to GZIP compressed files.
 
 NOTE: Fork from Craftware/aws-lambda-unzip, thank you!!!!
 
