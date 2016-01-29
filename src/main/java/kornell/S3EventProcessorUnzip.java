@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.net.URLDecoder;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -22,14 +23,19 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.S3Object;
 
 
+//handler name: kornell.S3EventProcessorUnzip
+
 public class S3EventProcessorUnzip implements RequestHandler<S3Event, String> {
+
+static final    Pattern pattern = Pattern.compile(".*\\.([^\\.]*)");
 
     @Override
     public String handleRequest(S3Event s3Event, Context context) {
-        byte[] buffer = new byte[1024];
+//        byte[] buffer = new byte[1024];
+        byte[] buffer = new byte[8192];
         try {
             for (S3EventNotificationRecord record: s3Event.getRecords()) {
-                String srcBucket = record.getS3().getBucket().getName();
+                final String srcBucket = record.getS3().getBucket().getName();
 
                 // Object key may have spaces or unicode non-ASCII characters.
                 String srcKey = record.getS3().getObject().getKey()
@@ -37,36 +43,61 @@ public class S3EventProcessorUnzip implements RequestHandler<S3Event, String> {
                 srcKey = URLDecoder.decode(srcKey, "UTF-8");
 
                 // Detect file type
-                Matcher matcher = Pattern.compile(".*\\.([^\\.]*)").matcher(srcKey);
+//                Pattern pattern = Pattern.compile(".*\\.([^\\.]*)");
+                final Matcher matcher = pattern.matcher(srcKey);
                 if (!matcher.matches()) {
-                    System.out.println("Unable to detect file type for key " + srcKey);
+                    System.out.println("CODE: Unable to detect file type for key " + srcKey);
                     return "";
                 }
-                String extension = matcher.group(1).toLowerCase();
+                final String extension = matcher.group(1).toLowerCase();
+//                final String foldername = matcher.group(0);
+              final String foldername = srcKey.replace("." + extension, "");
+                
+                final String destBucket = srcBucket + "/" + foldername;
+                
+                
                 if (!"zip".equals(extension)) {
-                    System.out.println("Skipping non-zip file " + srcKey + " with extension " + extension);
+                    System.out.println("CODE: Skipping non-zip file " + srcKey + " with extension " + extension);
                     return "";
                 }
-                System.out.println("Extracting zip file " + srcBucket + "/" + srcKey);
+                System.out.println("CODE: Extracting zip file " + srcBucket + "/" + srcKey);
+                
                 
                 // Download the zip from S3 into a stream
                 AmazonS3 s3Client = new AmazonS3Client();
-                S3Object s3Object = s3Client.getObject(new GetObjectRequest(srcBucket, srcKey));
-                ZipInputStream zis = new ZipInputStream(s3Object.getObjectContent());
+                final S3Object s3Object = s3Client.getObject(new GetObjectRequest(srcBucket, srcKey));
+                final ZipInputStream zis = new ZipInputStream(s3Object.getObjectContent());
                 ZipEntry entry = zis.getNextEntry();
 
                 while(entry != null) {
                     String fileName = entry.getName();
-                    System.out.println("Extracting " + fileName + ", compressed: " + entry.getCompressedSize() + " bytes, extracted: " + entry.getSize() + " bytes");
-                    ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                    System.out.println("CODE: Extracting " + fileName + ", compressed: " + entry.getCompressedSize() + " bytes, extracted: " + entry.getSize() + " bytes");
+                    
+                    final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
                     int len;
-                    while ((len = zis.read(buffer)) > 0) {
-                        outputStream.write(buffer, 0, len);
-                    }
-                    InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
-                    ObjectMetadata meta = new ObjectMetadata();
+//                    while ((len = zis.read(buffer)) > 0) {
+//                        outputStream.write(buffer, 0, len);
+//                    }
+                    final GZIPOutputStream zipStream =
+                            new GZIPOutputStream(outputStream);
+                    try{
+	                    while ((len = zis.read(buffer)) > 0) {
+	                    	zipStream.write(buffer, 0, len);
+	                    }
+                      }
+                      finally
+                      {
+                        zipStream.close();
+                      }
+                      
+                    
+                    final InputStream is = new ByteArrayInputStream(outputStream.toByteArray());
+                    final ObjectMetadata meta = new ObjectMetadata();
                     meta.setContentLength(outputStream.size());
-                    s3Client.putObject(srcBucket, fileName, is, meta);
+                    //TODO evaluate modifying filename when doesn't comply with S3 naming conventions.
+//                    s3Client.putObject(srcBucket, fileName + ".gz", is, meta);
+                    s3Client.putObject(destBucket, fileName + ".gz", is, meta);
+                    
                     is.close();
                     outputStream.close();
                     entry = zis.getNextEntry();
@@ -76,12 +107,15 @@ public class S3EventProcessorUnzip implements RequestHandler<S3Event, String> {
                 
                 //delete zip file when done
                 s3Client.deleteObject(new DeleteObjectRequest(srcBucket, srcKey));
-                System.out.println("Deleted zip file " + srcBucket + "/" + srcKey);
+                System.out.println("CODE: Deleted zip file " + srcBucket + "/" + srcKey);
             }
             return "Ok";
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
+    
+    
+
 
 }
