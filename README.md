@@ -2,6 +2,7 @@
 Function for AWS Lambda to extract zip files uploaded to S3
 
 NOTE: Fork from Craftware/aws-lambda-unzip, thank you!!!!
+
 LICENSE: Apache License, see license file.
 
 
