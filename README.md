@@ -6,7 +6,7 @@ NOTE: Fork from Craftware/aws-lambda-unzip, thank you!!!!
 LICENSE: Apache License, see license file.
 
 
-Zipfilename will be used to create a directory beside zipfile location, then each file within the zip file will be moved underneath that directory and GZIP compressed (.gz extension).
+BEHAVIOR (note, very different from original aws-lambda-unzip): Zipfilename will be used to create a directory beside zipfile location, then each file within the zip file will be moved underneath that directory and GZIP compressed (.gz extension).
 
 The zipfile is deleted at the end of the operation.
 
