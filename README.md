@@ -53,7 +53,7 @@ Random 8MB ZIP file with CSV content file for different Lambda sizing comparison
 
 Unofficial/random note with no promises, gaurantees, warranties, or anything other than take-at-your-own-risk knowledge.  A 10MB zip file with 1 text file inside at 1536MB would take on average 7-8 seconds would have a cost of:
 ```
-$0.0002 per 10MB file to process.
+$0.0002 per 10MB file to process (excluding S3 get/put and storage costs)
 ```
 
 
